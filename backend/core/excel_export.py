@@ -1,9 +1,7 @@
 """
 core/excel_export.py — Generate clean branded .xlsx output.
 
-Two exports:
-
-1. export_full(path, register)
+Function: export_full(path, register)
    One sheet per set.  Fresh branded layout:
      Row 1  — Project header (ROOT3POWER · project_number · SET NAME), copper bg
      Row 2  — Status summary strip
@@ -12,10 +10,6 @@ Two exports:
      Row 5+ — Data rows
 
    Columns: # | Drawing Number | Description | Revisions | Status | Notes
-
-2. export_transmittal_index(path, register, set_name)
-   Single sheet "Drawing Index" for consumption by Transmittal Builder.
-   Columns: Drawing No. | Description | Revision (latest non-empty rev)
 """
 
 from __future__ import annotations
@@ -29,8 +23,6 @@ from openpyxl.styles import (
     Alignment,
     Border,
     Font,
-    GradientFill,
-    NamedStyle,
     PatternFill,
     Side,
 )
@@ -116,13 +108,6 @@ def _format_revisions(revisions: list[dict]) -> str:
     return " \u2192 ".join(parts)
 
 
-def _latest_rev(revisions: list[dict]) -> str:
-    """Return the latest non-empty rev label."""
-    for r in reversed(revisions):
-        v = r.get("rev", "").strip()
-        if v and v != "-":
-            return v
-    return "-"
 
 
 # ─── Full Export ───────────────────────────────────────────────
@@ -286,63 +271,3 @@ def _write_set_sheet(
     ws.page_setup.fitToWidth = 1
     ws.page_setup.fitToHeight = 0
     ws.print_title_rows = "1:4"
-
-
-# ─── Transmittal Index Export ──────────────────────────────────
-
-def export_transmittal_index(
-    path: str,
-    register: dict[str, Any],
-    set_name: str,
-) -> None:
-    """
-    Write a slim .xlsx consumable by Transmittal Builder's /api/parse-index.
-    Sheet: "Drawing Index"
-    Columns: Drawing No. | Description | Revision (latest non-empty rev)
-    Natural sort by drawing number.
-    """
-    # Find the requested set
-    drawings: list[dict] = []
-    for s in register.get("sets", []):
-        if s.get("name") == set_name:
-            drawings = s.get("drawings", [])
-            break
-
-    drawings = sorted(
-        drawings,
-        key=lambda d: _natural_sort_key(d.get("drawing_number", "")),
-    )
-
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Drawing Index"
-
-    # Header row
-    headers = ["Drawing No.", "Description", "Revision"]
-    header_fills = [_pf(_BG_DARK), _pf(_BG_DARK), _pf(_BG_DARK)]
-    for i, (label, fill) in enumerate(zip(headers, header_fills)):
-        c = ws.cell(row=1, column=i + 1, value=label)
-        c.fill = fill
-        c.font = Font(name="Calibri", bold=True, size=11, color=_CREAM)
-        c.alignment = _align("center", "center")
-        c.border = _THIN_BORDER
-
-    # Column widths
-    ws.column_dimensions["A"].width = 24
-    ws.column_dimensions["B"].width = 52
-    ws.column_dimensions["C"].width = 12
-
-    # Data rows
-    for idx, drawing in enumerate(drawings):
-        row = idx + 2
-        ws.cell(row=row, column=1, value=drawing.get("drawing_number", ""))
-        ws.cell(row=row, column=2, value=drawing.get("description", ""))
-        ws.cell(row=row, column=3, value=_latest_rev(drawing.get("revisions", [])))
-        for col in range(1, 4):
-            ws.cell(row=row, column=col).font = Font(name="Calibri", size=10)
-            ws.cell(row=row, column=col).border = _THIN_BORDER
-
-    ws.auto_filter.ref = "A1:C1"
-    ws.freeze_panes = "A2"
-
-    wb.save(path)
