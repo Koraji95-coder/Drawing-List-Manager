@@ -1,7 +1,7 @@
 """
 core/excel_export.py — Generate clean branded .xlsx output.
 
-export_full(path, register)
+Function: export_full(path, register)
    One sheet per set.  Fresh branded layout:
      Row 1  — Project header (ROOT3POWER · project_number · SET NAME), copper bg
      Row 2  — Status summary strip
