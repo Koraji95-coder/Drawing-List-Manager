@@ -7,7 +7,6 @@ Routes:
     POST /api/register/save            Write a register to disk as JSON
     POST /api/register/import-excel    Import a legacy Master Deliverable List .xlsx
     POST /api/register/export-full     Export full branded .xlsx
-    POST /api/register/export-transmittal-index  Export slim .xlsx for Transmittal Builder
 
 Run:
     uvicorn app:app --reload --port 8001
@@ -18,11 +17,11 @@ from __future__ import annotations
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Any, Optional
+from typing import Any
 
 from core.register import open_register, save_register
 from core.excel_import import import_excel
-from core.excel_export import export_full, export_transmittal_index
+from core.excel_export import export_full
 
 
 # ─── App Setup ────────────────────────────────────────────────
@@ -66,12 +65,6 @@ class ImportExcelRequest(BaseModel):
 class ExportFullRequest(BaseModel):
     path: str
     register: dict[str, Any]
-
-
-class ExportTransmittalRequest(BaseModel):
-    path: str
-    register: dict[str, Any]
-    set_name: str
 
 
 # ─── Register Endpoints ───────────────────────────────────────
@@ -119,12 +112,3 @@ def api_export_full(req: ExportFullRequest):
         return {"success": True}
     except Exception as e:
         raise HTTPException(500, f"Failed to export: {e}")
-
-
-@app.post("/api/register/export-transmittal-index")
-def api_export_transmittal_index(req: ExportTransmittalRequest):
-    try:
-        export_transmittal_index(req.path, req.register, req.set_name)
-        return {"success": True}
-    except Exception as e:
-        raise HTTPException(500, f"Failed to export transmittal index: {e}")
