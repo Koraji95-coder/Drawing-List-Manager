@@ -25,7 +25,7 @@ from typing import Any
 # Drawing number pattern to extract the type digit.
 # e.g. R3P-25074-E6-0001  → discipline="E", type_digit="6"
 _DRAW_NUM_RE = re.compile(
-    r"^R3P-\d+-[A-Za-z](?P<type>\d)-\d{4}$", re.IGNORECASE
+    r"^R3P-\d+-[A-Za-z](?P<type>\d)-\d{4}$"
 )
 
 # Set names that are kept as-is (already in the v2 vocabulary).

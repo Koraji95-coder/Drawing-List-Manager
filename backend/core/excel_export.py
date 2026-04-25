@@ -39,6 +39,7 @@ from core.register import current_display_rev
 
 _COPPER = "C4884D"
 _BG_DARK = "252420"
+_BG_MEDIUM = "3A3A35"   # slightly lighter than _BG_DARK; used for grouped column headers
 _CREAM = "F0ECE4"
 _MUTED = "A39E93"
 
@@ -166,7 +167,7 @@ def _write_index_sheet(wb, project_number: str, drawings: list[dict]) -> None:
         rev_num = j + 1
         for col, label in [(rev_col, f"REV{rev_num}"), (date_col, f"DATE{rev_num}")]:
             c = ws.cell(row=2, column=col, value=label)
-            c.fill = _pf("3A3A35")  # slightly lighter than main header
+            c.fill = _pf(_BG_MEDIUM)
             c.font = Font(name="Calibri", bold=True, size=10, color=_MUTED)
             c.alignment = _align("center", "center")
             c.border = _THIN_BORDER

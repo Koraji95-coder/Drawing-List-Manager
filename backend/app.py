@@ -16,10 +16,13 @@ Run:
 
 from __future__ import annotations
 
+import logging
+
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Any
+import os
 
 from core.register import open_register, save_register, validate_register
 from core.excel_import import import_excel
@@ -98,7 +101,6 @@ def api_create_project(req: CreateProjectRequest):
 def api_open_project(req: OpenProjectRequest):
     try:
         marker = read_marker(req.marker_path)
-        import os
         project_dir = os.path.dirname(os.path.abspath(req.marker_path))
         register_file = marker.get("register_file", "")
         register_path = os.path.join(project_dir, register_file)
@@ -124,7 +126,6 @@ def api_list_recent():
 @app.post("/api/register/save")
 def api_save_register(req: SaveRegisterRequest):
     try:
-        import os
         project_dir = os.path.dirname(os.path.abspath(req.marker_path))
         marker = read_marker(req.marker_path)
         register_file = marker.get("register_file", "")
@@ -159,7 +160,6 @@ def api_import_excel(req: ImportExcelRequest):
 @app.get("/api/register/validate")
 def api_validate_register(marker_path: str = Query(...)):
     try:
-        import os
         project_dir = os.path.dirname(os.path.abspath(marker_path))
         marker = read_marker(marker_path)
         register_file = marker.get("register_file", "")

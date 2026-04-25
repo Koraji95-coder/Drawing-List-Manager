@@ -74,6 +74,15 @@ const MIN_SPLASH_MS: u64 = 13_000;
 /// Minimum splash display for subsequent launches (ms).
 const MIN_SPLASH_MS_SHORT: u64 = 3_200;
 
+/// How long the splash holds the "ready" state before starting the fade (ms).
+const FADE_HOLD_MS: u64 = 800;
+
+/// Duration of the splash fade-out animation (ms).
+const FADE_DURATION_MS: u64 = 1000;
+
+/// Extra safety margin after the fade completes before the Rust fallback fires (ms).
+const FADE_SAFETY_MS: u64 = 400;
+
 // ── Tauri commands: update check / start ──────────────────────────────────
 
 /// Returned by the `check_for_update` Tauri command.
@@ -231,10 +240,6 @@ fn startup_sequence(app: tauri::AppHandle, child_arc: Arc<Mutex<Option<Child>>>)
     }
 
     // ── 6. Transition to main window ──────────────────────────────────────
-    const FADE_HOLD_MS:     u64 = 800;
-    const FADE_DURATION_MS: u64 = 1000;
-    const FADE_SAFETY_MS:   u64 = 400;
-
     if let Err(e) = app.emit("splash://fade-now", ()) {
         eprintln!("[splash] emit splash://fade-now failed: {e}");
     }
